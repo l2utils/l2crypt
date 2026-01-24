@@ -26,7 +26,7 @@
     "l2crypt"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/l2utils/l2crypt/issues"
   },

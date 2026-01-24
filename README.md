@@ -68,4 +68,4 @@ The project includes a GitHub Actions workflow in `.github/workflows/test.yml` t
 
 ## License
 
-MIT
+BSD 3-Clause
