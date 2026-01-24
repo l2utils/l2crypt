@@ -2,8 +2,15 @@
   "name": "@l2utils/l2crypt",
   "version": "1.0.0",
   "description": "Lineage 2 cryptography library",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "bin": {
+    "l2crypt": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "decode": "ts-node src/index.ts"

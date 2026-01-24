@@ -21,17 +21,20 @@ npm install
 
 ### Command Line Interface
 
-You can run the tool using `ts-node`:
+If installed globally or as a dependency, you can run the tool using the `l2crypt` command. Local development can still use `ts-node`:
 
 ```bash
-# Decode to a specific file
-npx ts-node src/index.ts -i in/L2.ini -o out/L2.ini
+# Using the globally installed command
+l2crypt -i in/L2.ini -o out/L2.ini
+
+# Using npx without installation
+npx @l2utils/l2crypt -i in/L2.ini -o out/L2.ini
 
 # Decode and output to stdout
-npx ts-node src/index.ts in/L2.ini > decoded.ini
+l2crypt in/L2.ini > decoded.ini
 
 # Display help
-npx ts-node src/index.ts --help
+l2crypt --help
 ```
 
 #### Options

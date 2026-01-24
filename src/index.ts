@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import fs from "node:fs/promises";
 import { resolve } from "node:path";
 import { Command } from "commander";

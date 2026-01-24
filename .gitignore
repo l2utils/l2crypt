@@ -2,3 +2,4 @@ node_modules/
 in/
 out/
 coverage/
+dist/
