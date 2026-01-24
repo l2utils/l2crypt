@@ -1,47 +1,44 @@
 import fs from "node:fs/promises";
-import { basename, resolve } from "node:path";
+import { resolve } from "node:path";
+import { Command } from "commander";
 import { decode } from "./decoder";
 
-async function main() {
-  const args = process.argv.slice(2);
-  let inputPath: string | undefined;
-  let outputPath: string | undefined;
+const program = new Command();
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
-    if (arg === "-i" && i + 1 < args.length) {
-      inputPath = args[++i];
-    } else if (arg === "-o" && i + 1 < args.length) {
-      outputPath = args[++i];
-    } else if (!arg.startsWith("-") && !inputPath) {
-      inputPath = arg;
+program
+  .name("l2crypt")
+  .description("Lineage 2 cryptography tool")
+  .version("1.0.0")
+  .argument("[input]", "Input file path")
+  .option("-i, --input <path>", "Input file path")
+  .option("-o, --output <path>", "Output file path")
+  .action(async (positionalInput, options) => {
+    const inputPath = options.input || positionalInput;
+    const outputPath = options.output;
+
+    if (!inputPath) {
+      console.error("Error: input file is required");
+      program.help();
+      process.exit(1);
     }
-  }
 
-  if (!inputPath) {
-    console.error(
-      "Usage: npx ts-node src/index.ts -i <input_file> [-o <output_file>]",
-    );
-    process.exit(1);
-  }
-
-  try {
-    const decoded = await decode(inputPath);
-    if (outputPath) {
-      const outPath = resolve(outputPath);
-      const outDir = resolve(outPath, "..");
-      if (outDir !== resolve(".")) {
-        await fs.mkdir(outDir, { recursive: true });
+    try {
+      const decoded = await decode(inputPath);
+      if (outputPath) {
+        const outPath = resolve(outputPath);
+        const outDir = resolve(outPath, "..");
+        if (outDir !== resolve(".")) {
+          await fs.mkdir(outDir, { recursive: true });
+        }
+        await fs.writeFile(outPath, decoded);
+        console.info(`Successfully decoded ${inputPath} to ${outPath}`);
+      } else {
+        process.stdout.write(decoded);
       }
-      await fs.writeFile(outPath, decoded);
-      console.info(`Successfully decoded ${inputPath} to ${outPath}`);
-    } else {
-      process.stdout.write(decoded);
+    } catch (error) {
+      console.error(`Decoding failed: ${(error as Error).message}`);
+      process.exit(1);
     }
-  } catch (error) {
-    console.error(`Decoding failed: ${(error as Error).message}`);
-    process.exit(1);
-  }
-}
+  });
 
-main();
+program.parse(process.argv);
