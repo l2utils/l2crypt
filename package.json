@@ -4,7 +4,9 @@
   "description": "Lineage 2 cryptography library",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "decode": "ts-node src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -23,10 +25,12 @@
   },
   "homepage": "https://github.com/l2utils/l2crypt#readme",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.13.5",
+    "jest": "^30.2.0",
     "prettier": "^3.2.5",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
-  },
-  "dependencies": {}
+  }
 }
