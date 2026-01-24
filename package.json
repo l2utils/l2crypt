@@ -1,0 +1,32 @@
+{
+  "name": "@l2utils/l2crypt",
+  "version": "1.0.0",
+  "description": "Lineage 2 cryptography library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/l2utils/l2crypt.git"
+  },
+  "keywords": [
+    "Lineage 2",
+    "crytography",
+    "l2encdec",
+    "l2crypt"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/l2utils/l2crypt/issues"
+  },
+  "homepage": "https://github.com/l2utils/l2crypt#readme",
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {}
+}
