@@ -142,4 +142,52 @@ describe("decode", () => {
     const result = await decode("dummy.ini");
     expect(result.length).toBe(100);
   });
+
+  [0x9c, 0xda, 0x01].forEach((secondByte) => {
+    test(`uses zlib signature alignment (0x78 0x${secondByte.toString(16)}) in first block`, async () => {
+      (getHeader as jest.Mock).mockResolvedValue(413);
+      const mockFileHandle = {
+        stat: jest.fn().mockResolvedValue({ size: 156 }),
+        read: jest.fn().mockResolvedValue({ bytesRead: CHUNK_SIZE }),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+      (fs.open as jest.Mock).mockResolvedValue(mockFileHandle);
+
+      const decrypted = Buffer.alloc(125, 0);
+      // Signature at index 4-5
+      decrypted[4] = 0x78;
+      decrypted[5] = secondByte;
+      // Expected size at 0-3 (p = 4-4 = 0)
+      decrypted.writeUInt32LE(50, 0);
+
+      (bigIntPowMod as jest.Mock).mockReturnValue(
+        BigInt("0x" + decrypted.toString("hex")),
+      );
+      (zlib.inflateSync as jest.Mock).mockReturnValue(Buffer.alloc(50));
+
+      const result = await decode("dummy.ini");
+      expect(result.length).toBe(50);
+    });
+  });
+
+  test("throws error if total decrypted data is too small", async () => {
+    (getHeader as jest.Mock).mockResolvedValue(413);
+    const mockFileHandle = {
+      stat: jest.fn().mockResolvedValue({ size: 156 }),
+      read: jest.fn().mockResolvedValue({ bytesRead: CHUNK_SIZE }),
+      close: jest.fn().mockResolvedValue(undefined),
+    };
+    (fs.open as jest.Mock).mockResolvedValue(mockFileHandle);
+
+    const decrypted = Buffer.alloc(125, 0);
+    decrypted[0] = 3; // dataSize=3, len=3
+
+    (bigIntPowMod as jest.Mock).mockReturnValue(
+      BigInt("0x" + decrypted.toString("hex")),
+    );
+
+    await expect(decode("dummy.ini")).rejects.toThrow(
+      "Decrypted data is too small to contain size field",
+    );
+  });
 });
