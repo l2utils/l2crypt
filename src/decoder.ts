@@ -89,25 +89,13 @@ export async function decode(filepath: string): Promise<Buffer> {
     const expectedDecompressedSize = combinedData.readUInt32LE(0);
     const compressedData = combinedData.subarray(4);
 
-    try {
-      const decompressed = zlib.inflateSync(compressedData);
-      if (decompressed.length !== expectedDecompressedSize) {
-        throw new Error(
-          `Decompressed size mismatch: expected ${expectedDecompressedSize}, got ${decompressed.length}`,
-        );
-      }
-      return decompressed;
-    } catch (error) {
-      console.error(`Decompression failed for ${filepath}:`);
-      console.error(
-        `- Expected decompressed size: ${expectedDecompressedSize}`,
+    const decompressed = zlib.inflateSync(compressedData);
+    if (decompressed.length !== expectedDecompressedSize) {
+      throw new Error(
+        `Decompressed size mismatch: expected ${expectedDecompressedSize}, got ${decompressed.length}`,
       );
-      console.error(`- Compressed data length: ${compressedData.length}`);
-      console.error(
-        `- First 16 bytes of compressed data: ${compressedData.subarray(0, 16).toString("hex")}`,
-      );
-      throw error;
     }
+    return decompressed;
   } finally {
     await fileHandle.close();
   }

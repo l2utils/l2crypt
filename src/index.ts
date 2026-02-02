@@ -4,6 +4,59 @@ import { resolve } from "node:path";
 import { Command } from "commander";
 import { decode } from "./decoder";
 
+interface DecodeResults {
+  success: string[];
+  failed: { file: string; error: string }[];
+}
+
+async function processDirectory(
+  inputDir: string,
+  outputDir: string,
+): Promise<DecodeResults> {
+  const files = await fs.readdir(inputDir);
+  const results: DecodeResults = {
+    success: [],
+    failed: [],
+  };
+
+  for (const file of files) {
+    const filePath = resolve(inputDir, file);
+    const stats = await fs.stat(filePath);
+
+    if (stats.isFile()) {
+      try {
+        const decoded = await decode(filePath);
+        const outPath = resolve(outputDir, file);
+        await fs.writeFile(outPath, decoded);
+        console.info(`Successfully decoded ${file} to ${outPath}`);
+        results.success.push(file);
+      } catch (error) {
+        const errorMessage = (error as Error).message;
+        console.error(`Failed to decode ${file}`, error);
+        results.failed.push({ file, error: errorMessage });
+      }
+    }
+  }
+
+  return results;
+}
+
+function printSummary(results: DecodeResults): void {
+  console.info("\nDecoding Summary:");
+  console.info(
+    `Total processed: ${results.success.length + results.failed.length}`,
+  );
+  console.info(`Successfully decoded: ${results.success.length}`);
+  console.info(`Failed to decode: ${results.failed.length}`);
+
+  if (results.failed.length > 0) {
+    console.info("\nFailed Files:");
+    results.failed.forEach(({ file, error }) => {
+      console.info(`- ${file}: ${error}`);
+    });
+  }
+}
+
 const program = new Command();
 
 program
@@ -30,47 +83,10 @@ program
       if (stats.isDirectory()) {
         const outDir = outputPath ? resolve(outputPath) : resolve("out");
         await fs.mkdir(outDir, { recursive: true });
-
-        const files = await fs.readdir(resolvedInputPath);
         console.info(`Processing directory: ${resolvedInputPath}`);
 
-        const results = {
-          success: [] as string[],
-          failed: [] as { file: string; error: string }[],
-        };
-
-        for (const file of files) {
-          const filePath = resolve(resolvedInputPath, file);
-          const fileStats = await fs.stat(filePath);
-
-          if (fileStats.isFile()) {
-            try {
-              const decoded = await decode(filePath);
-              const outPath = resolve(outDir, file);
-              await fs.writeFile(outPath, decoded);
-              console.info(`Successfully decoded ${file} to ${outPath}`);
-              results.success.push(file);
-            } catch (error) {
-              const errorMessage = (error as Error).message;
-              console.error(`Failed to decode ${file}`, error);
-              results.failed.push({ file, error: errorMessage });
-            }
-          }
-        }
-
-        console.info("\nDecoding Summary:");
-        console.info(
-          `Total processed: ${results.success.length + results.failed.length}`,
-        );
-        console.info(`Successfully decoded: ${results.success.length}`);
-        console.info(`Failed to decode: ${results.failed.length}`);
-
-        if (results.failed.length > 0) {
-          console.info("\nFailed Files:");
-          results.failed.forEach(({ file, error }) => {
-            console.info(`- ${file}: ${error}`);
-          });
-        }
+        const results = await processDirectory(resolvedInputPath, outDir);
+        printSummary(results);
       } else {
         const decoded = await decode(resolvedInputPath);
         if (outputPath) {
