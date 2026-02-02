@@ -46,31 +46,68 @@ export async function decode(filepath: string): Promise<Buffer> {
       const decrypted = Buffer.from(hex, "hex");
 
       const dataSize = decrypted[0];
-      let actualData: Buffer;
+      let p: number;
+      let len: number;
 
-      if (dataSize !== 0x7c) {
-        let p = decrypted.length - dataSize;
-        while (p > 2 && decrypted[p - 1] !== 0) --p;
-        actualData = decrypted.subarray(p, p + dataSize);
+      if (dataSize === 0x7c) {
+        p = 1;
+        len = 124;
       } else {
-        actualData = decrypted.subarray(1);
+        p = 125 - dataSize;
+        while (p > 1 && decrypted[p - 1] !== 0) --p;
+        len = dataSize;
       }
 
-      decryptedChunks.push(actualData);
+      if (i === 0) {
+        // Robust alignment for the first block using zlib signature
+        let zlibIdx = -1;
+        for (let j = 0; j < decrypted.length - 1; j++) {
+          if (
+            decrypted[j] === 0x78 &&
+            (decrypted[j + 1] === 0x9c ||
+              decrypted[j + 1] === 0xda ||
+              decrypted[j + 1] === 0x01)
+          ) {
+            zlibIdx = j;
+            break;
+          }
+        }
+        if (zlibIdx >= 4) {
+          p = zlibIdx - 4;
+          len = 125 - p;
+        }
+      }
+
+      decryptedChunks.push(decrypted.subarray(p, p + len));
     }
 
     const combinedData = Buffer.concat(decryptedChunks);
+    if (combinedData.length < 4) {
+      throw new Error("Decrypted data is too small to contain size field");
+    }
+
     const expectedDecompressedSize = combinedData.readUInt32LE(0);
     const compressedData = combinedData.subarray(4);
 
-    const decompressed = zlib.inflateSync(compressedData);
-    if (decompressed.length !== expectedDecompressedSize) {
-      throw new Error(
-        `Decompressed size mismatch: expected ${expectedDecompressedSize}, got ${decompressed.length}`,
+    try {
+      const decompressed = zlib.inflateSync(compressedData);
+      if (decompressed.length !== expectedDecompressedSize) {
+        throw new Error(
+          `Decompressed size mismatch: expected ${expectedDecompressedSize}, got ${decompressed.length}`,
+        );
+      }
+      return decompressed;
+    } catch (error) {
+      console.error(`Decompression failed for ${filepath}:`);
+      console.error(
+        `- Expected decompressed size: ${expectedDecompressedSize}`,
       );
+      console.error(`- Compressed data length: ${compressedData.length}`);
+      console.error(
+        `- First 16 bytes of compressed data: ${compressedData.subarray(0, 16).toString("hex")}`,
+      );
+      throw error;
     }
-
-    return decompressed;
   } finally {
     await fileHandle.close();
   }
