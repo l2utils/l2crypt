@@ -42,3 +42,4 @@ npm run test:coverage
 1. **Verify Before Done**: Always ensure `npm test` and `npm run build` pass before finishing.
 2. **Surgical Edits**: Make minimal, targeted diffs. Do not rewrite working code or delete existing documentation.
 3. **Synchronize Configurations**: Keep `AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, `.cursorrules`, and `.github/copilot-instructions.md` in sync.
+4. **PR Templates & Shell Safety**: Always populate `.github/pull_request_template.md` and pass it via `gh pr create --body-file <path>`.
