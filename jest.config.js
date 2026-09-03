@@ -10,7 +10,7 @@ module.exports = {
   },
   collectCoverage: true,
   coverageDirectory: "coverage",
-  collectCoverageFrom: ["src/**/*.ts", "!src/index.ts", "!src/**/*.test.ts"],
+  collectCoverageFrom: ["src/**/*.ts", "!src/cli.ts", "!src/**/*.test.ts"],
   coverageThreshold: {
     global: {
       branches: 100,

@@ -19,6 +19,24 @@ npm install
 
 ## Usage
 
+### Programmatic API (Library)
+
+You can import `@l2utils/l2crypt` directly into your TypeScript/JavaScript projects:
+
+```typescript
+import { decode, getHeader } from "@l2utils/l2crypt";
+
+async function main() {
+  // Check file version
+  const version = await getHeader("L2.ini");
+  console.log("Version:", version); // 413
+
+  // Decode file to Buffer
+  const buffer = await decode("L2.ini");
+  console.log("Decoded size:", buffer.length);
+}
+```
+
 ### Command Line Interface
 
 If installed globally or as a dependency, you can run the tool using the `l2crypt` command. Local development can still use `ts-node`:
