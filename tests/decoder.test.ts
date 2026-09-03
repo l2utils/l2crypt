@@ -190,4 +190,33 @@ describe("decode", () => {
       "Decrypted data is too small to contain size field",
     );
   });
+
+  test("handles partial block where data is shifted by trailing zeros", async () => {
+    (getHeader as jest.Mock).mockResolvedValue(413);
+    const mockFileHandle = {
+      stat: jest.fn().mockResolvedValue({ size: 156 + CHUNK_SIZE }),
+      read: jest.fn().mockResolvedValue({ bytesRead: CHUNK_SIZE }),
+      close: jest.fn().mockResolvedValue(undefined),
+    };
+    (fs.open as jest.Mock).mockResolvedValue(mockFileHandle);
+
+    const block0 = Buffer.alloc(125, 0);
+    block0[0] = 0x7c;
+    block0.writeUInt32LE(50, 1);
+    block0[5] = 0x78;
+    block0[6] = 0x9c;
+
+    const block1 = Buffer.alloc(125, 0);
+    block1[0] = 1;
+    block1[121] = 0xd6;
+
+    (bigIntPowMod as jest.Mock)
+      .mockReturnValueOnce(BigInt("0x" + block0.toString("hex")))
+      .mockReturnValueOnce(BigInt("0x" + block1.toString("hex")));
+
+    (zlib.inflateSync as jest.Mock).mockReturnValue(Buffer.alloc(50));
+
+    const result = await decode("dummy.ini");
+    expect(result.length).toBe(50);
+  });
 });
