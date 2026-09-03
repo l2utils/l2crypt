@@ -55,6 +55,20 @@ export async function decode(filepath: string): Promise<Buffer> {
       } else {
         p = 125 - dataSize;
         while (p > 1 && decrypted[p - 1] !== 0) --p;
+        if (decrypted[p] === 0 && p > 1) {
+          let candidate = p;
+          while (
+            candidate > 1 &&
+            candidate >= 125 - 3 - dataSize &&
+            decrypted[candidate - 1] === 0
+          ) {
+            candidate--;
+          }
+          if (candidate > 0 && decrypted[candidate - 1] !== 0) {
+            p = candidate;
+            while (p > 1 && decrypted[p - 1] !== 0) --p;
+          }
+        }
         len = dataSize;
       }
 
