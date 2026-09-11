@@ -34,7 +34,7 @@ npm run test:coverage
   - Pure library exports in `src/index.ts`
   - CLI binary runner in `src/cli.ts`
 * Keep `"declaration": true` and `"declarationMap": true` enabled in `tsconfig.json`.
-* Target 100% test coverage on core decryption algorithms using Jest.
+* Target 100% test coverage on core decryption algorithms using Vitest.
 
 ---
 
