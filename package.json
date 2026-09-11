@@ -1,6 +1,7 @@
 {
   "name": "@l2utils/l2crypt",
   "version": "1.0.0",
+  "packageManager": "pnpm@11.25.0",
   "description": "Lineage 2 cryptography library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
